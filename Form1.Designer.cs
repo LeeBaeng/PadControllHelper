@@ -482,7 +482,7 @@
             // 
             // chkRunMacro
             // 
-            chkRunMacro.Font = new Font("맑은 고딕", 24F, FontStyle.Regular, GraphicsUnit.Point, 129);
+            chkRunMacro.Font = new Font("맑은 고딕", 24F, FontStyle.Regular, GraphicsUnit.Point);
             chkRunMacro.Location = new Point(85, 13);
             chkRunMacro.Name = "chkRunMacro";
             chkRunMacro.Size = new Size(223, 73);
@@ -628,6 +628,7 @@
             Text = "LeeBaeng PCH Macro v1.0";
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;
+            Shown += Form1_Shown;
             Resize += Form1_Resize;
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();

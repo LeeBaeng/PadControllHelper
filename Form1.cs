@@ -67,9 +67,6 @@ namespace PadControlHelper {
             initRegistry();
 
             initComplete = true;
-            if(regHelper.getOpt_AutoMacroOn()) {
-                changeMacroMode(true);
-            }
         }
 
         private Variable? getSwitch(int id) {
@@ -369,7 +366,7 @@ namespace PadControlHelper {
 
         private void txtTitle_KeyDown(object sender, KeyEventArgs e) {
             if(e.KeyCode == Keys.Enter) {
-                if(txtTitle.Text == "open sqlite debugger") {
+                if(txtTitle.Text == "open sqlite debugger" || txtTitle.Text == "show sqlite debugger") {
                     new FrmDebugDB(sqLite).Show();
                 }
             }
@@ -408,6 +405,27 @@ namespace PadControlHelper {
 
         private void lstVariableList_MouseDoubleClick(object sender, MouseEventArgs e) {
             btnAddVariable_Click(btnEditVariable, null);
+        }
+
+        private void btnShowMacroEditView_Click(object sender, EventArgs e) {
+            pnlMainSwitch.Hide();
+        }
+
+        private void lblHideMacroEditView_Click(object sender, EventArgs e) {
+            pnlMainSwitch.Show();
+        }
+
+        private void Form1_Shown(object sender, EventArgs e) {
+            if(regHelper.getOpt_AutoMacroOn()) {
+                changeMacroMode(true);
+
+                if(regHelper.getOpt_AutoMacroOn()) {
+                    if(chkMinimizeToTray.Checked) {
+                        this.Hide();
+                        notifyIcon1.Visible = true;
+                    }
+                }
+            }
         }
         #endregion
 
@@ -694,12 +712,6 @@ namespace PadControlHelper {
 
 
 
-        private void btnShowMacroEditView_Click(object sender, EventArgs e) {
-            pnlMainSwitch.Hide();
-        }
-
-        private void lblHideMacroEditView_Click(object sender, EventArgs e) {
-            pnlMainSwitch.Show();
-        }
+        
     }
 }

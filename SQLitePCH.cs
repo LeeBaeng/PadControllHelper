@@ -49,6 +49,8 @@ namespace PadControllHelper {
                         tableElement(MACRO_SWITCH,"INTEGER"), // switchId
                         tableElement(MACRO_SWCONDITION,"INTEGER"),
                         tableElement(MACRO_POWER,"nvarchar(6)"),
+                        tableElement(MACRO_SWITCHTO,"INTEGER"),
+                        tableElement(MACRO_VALUETO,"INTEGER"),
                             });
                     printCmd(command.CommandText);
                     command.ExecuteNonQuery();
