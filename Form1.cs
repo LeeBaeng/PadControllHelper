@@ -646,24 +646,24 @@ namespace PadControlHelper {
                         foreach(var v in editedVars) {
                             if(v.id == m.changeAfterVar.id) {
                                 v.value = m.changeValueTo == ActivateCondition.ON ? true : false;
-                                isVarValueEdited = true;
+                                if(!isVarValueEdited) isVarValueEdited = true;
                                 break;
                             }
                         }
                     }
                 }
+            }
 
-                if(isVarValueEdited) {
-                    foreach(var v in vars) {
-                        foreach(var ev in editedVars) {
-                            if(v.id ==  ev.id && v.value != ev.value) {
-                                v.value = ev.value;
-                                break;
-                            }
+            if(isVarValueEdited) {
+                foreach(var v in vars) {
+                    foreach(var ev in editedVars) {
+                        if(v.id == ev.id && v.value != ev.value) {
+                            v.value = ev.value;
+                            break;
                         }
                     }
-                    updateVariableList();
                 }
+                updateVariableList();
             }
         }
         #endregion
