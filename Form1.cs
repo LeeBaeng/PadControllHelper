@@ -205,7 +205,7 @@ namespace PadControlHelper {
                     ((m.changeAfterVar != null) ? (int)m.changeAfterVar.id : -1) + ", " +
                     (int)m.changeValueTo + ", " +
                     "'" + m.runInfo?.fullPath + "', " +
-                    "'" + m.runInfo?.arguments + "', "
+                    "'" + m.runInfo?.arguments + "'"
                     );
 
             } else {
