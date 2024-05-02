@@ -165,8 +165,14 @@ namespace PadControlHelper {
             this.value = value;
         }
 
+        public Variable(Variable v) {
+            this.id = v.id;
+            this.name = v.name;
+            this.value = v.value;
+        }
+
         public override string ToString() {
-            return name;
+            return $"Variable : {name} (id:{id}, value:{value}, name:{name})";
         }
     }
 

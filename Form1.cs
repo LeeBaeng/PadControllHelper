@@ -1,8 +1,7 @@
 using PadControllHelper;
 using System.Data;
 using System.Diagnostics;
-using System.Resources;
-using UKW.Util.winapp;
+using UKW.Util.common;
 
 namespace PadControlHelper {
     public partial class Form1 : Form, IPopupListener {
@@ -590,10 +589,10 @@ namespace PadControlHelper {
                 return;
             }
 
-            List<Variable> editedVars = new List<Variable>(vars);
 
             Debug.WriteLine("Global Hook : " + key.ToString());
 
+            List<Variable> editedVars = new List<Variable>();
             var isVarValueEdited = false;
             foreach(Macro m in macros) {
                 if(!m.power)
@@ -607,9 +606,12 @@ namespace PadControlHelper {
                 }
 
                 if(m.keyInfo.key == key) {
+                    var action = m.action;
                     gmHook.ForceSetCursor(m.pointX, m.pointY);
-                    switch(m.action) {
+                    Thread.Sleep(50);
+                    switch(action) {
                         case MacroAction.CLICK:
+                            LLog.info("click event");
                             gmHook.ForceLeftClick();
                             break;
 
@@ -643,10 +645,13 @@ namespace PadControlHelper {
                     }
 
                     if(m.changeAfterVar != null) {
-                        foreach(var v in editedVars) {
-                            if(v.id == m.changeAfterVar.id) {
-                                v.value = m.changeValueTo == ActivateCondition.ON ? true : false;
-                                if(!isVarValueEdited) isVarValueEdited = true;
+                        foreach(var v in vars) {
+                            if(v == m.changeAfterVar) {
+                                var edtVar = new Variable(v);
+                                editedVars.Add(edtVar);
+                                edtVar.value = m.changeValueTo == ActivateCondition.ON ? true : false;
+                                if(!isVarValueEdited)
+                                    isVarValueEdited = true;
                                 break;
                             }
                         }
@@ -663,13 +668,10 @@ namespace PadControlHelper {
                         }
                     }
                 }
+
                 updateVariableList();
             }
         }
         #endregion
-
-
-
-        
     }
 }
