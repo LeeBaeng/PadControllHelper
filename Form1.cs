@@ -590,6 +590,8 @@ namespace PadControlHelper {
                 return;
             }
 
+            List<Variable> editedVars = new List<Variable>(vars);
+
             Debug.WriteLine("Global Hook : " + key.ToString());
 
             var isVarValueEdited = false;
@@ -641,8 +643,8 @@ namespace PadControlHelper {
                     }
 
                     if(m.changeAfterVar != null) {
-                        foreach(var v in vars) {
-                            if(v == m.changeAfterVar) {
+                        foreach(var v in editedVars) {
+                            if(v.id == m.changeAfterVar.id) {
                                 v.value = m.changeValueTo == ActivateCondition.ON ? true : false;
                                 isVarValueEdited = true;
                                 break;
@@ -652,60 +654,16 @@ namespace PadControlHelper {
                 }
 
                 if(isVarValueEdited) {
-                    // TODO : 변수 값 DB 업데이트
-
+                    foreach(var v in vars) {
+                        foreach(var ev in editedVars) {
+                            if(v.id ==  ev.id && v.value != ev.value) {
+                                v.value = ev.value;
+                                break;
+                            }
+                        }
+                    }
                     updateVariableList();
                 }
-            }
-
-
-            //// 입력한 키 코드 확인
-            //foreach(KeyValuePair<string, KeyInfo> keyValuePair in KeyList.keyList) {
-            //    KeyInfo k = keyValuePair.Value;
-            //    if(k.key == key) {
-            //        break;
-            //    }
-            //}
-
-            return;
-
-            // Ctrl + Q
-            if(args.KeyCode == (Keys.Control | Keys.Q)) {
-                // Do Something
-            }
-
-            switch(key) {
-                // Ctrl + Shift + 1
-                case Keys.D1 when gkHook.Shift && gkHook.Control:
-
-                    MessageBox.Show("Ctrl + Shift + 1");
-
-                    args.Handled = true; // 키 입력 무시
-                    break;
-
-                // 문자열을 드래그하고 Shift + 1을 누르면 **문자열** 꼴로 만들어주기
-                case Keys.D1 when gkHook.Shift:
-                    // Ctrl + X
-                    gkHook.Force_Cut();
-
-                    // **
-                    gkHook.ForceKeyDown(Keys.LShiftKey);
-                    gkHook.ForceKeyPress(Keys.D8);
-                    gkHook.ForceKeyPress(Keys.D8);
-                    gkHook.ForceKeyUp(Keys.LShiftKey);
-
-                    // Ctrl + V
-                    gkHook.Force_Paste();
-
-                    // **
-                    gkHook.ForceKeyDown(Keys.LShiftKey);
-                    gkHook.ForceKeyPress(Keys.D8);
-                    gkHook.ForceKeyPress(Keys.D8);
-                    gkHook.ForceKeyUp(Keys.LShiftKey);
-
-                    // 글로벌로 키 안넘김
-                    args.Handled = true;
-                    break;
             }
         }
         #endregion
