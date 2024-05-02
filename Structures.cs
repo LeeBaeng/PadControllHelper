@@ -18,7 +18,9 @@ namespace PadControlHelper {
         public Variable? changeAfterVar { get; set; }
         public ActivateCondition changeValueTo {  get; set; }
 
-        public Macro(string title, int pointX, int pointY, MacroAction action, KeyInfo shortCut, Variable? variable, ActivateCondition activateWhen, bool power, Variable? changeAfterVar, ActivateCondition changeValueTo, int id = -1) {
+        public string? runFilePath { get; set; }
+
+        public Macro(string title, int pointX, int pointY, MacroAction action, KeyInfo shortCut, Variable? variable, ActivateCondition activateWhen, bool power, Variable? changeAfterVar, ActivateCondition changeValueTo, string? runfilePath, int id = -1) {
             this.title = title;
             this.pointX = pointX;
             this.pointY = pointY;
@@ -29,6 +31,7 @@ namespace PadControlHelper {
             this.power = power;
             this.changeAfterVar = changeAfterVar;
             this.changeValueTo = changeValueTo;
+            this.runFilePath = runfilePath;
             this.id = id;   
         }
     }
@@ -42,6 +45,7 @@ namespace PadControlHelper {
         M_DOUBLE_CLICK = 5,
         WHEEL_UP = 6,
         WHEEL_DOWN = 7,
+        RUN_PROGRAM = 8,
     }
 
     public class KeyInfo {

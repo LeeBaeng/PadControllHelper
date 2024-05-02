@@ -1,5 +1,5 @@
-﻿namespace PadControlHelper {
-    partial class PopAddVariable {
+﻿namespace PadControllHelper {
+    partial class PopupSelectProgram {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -23,33 +23,43 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
+            txtFilePath = new TextBox();
             label1 = new Label();
-            txtVarName = new TextBox();
+            btnOpenBrowser = new Button();
             btnOK = new Button();
             btnCancel = new Button();
-            cboValue = new ComboBox();
+            openFileDialog1 = new OpenFileDialog();
             SuspendLayout();
+            // 
+            // txtFilePath
+            // 
+            txtFilePath.Location = new Point(169, 15);
+            txtFilePath.Name = "txtFilePath";
+            txtFilePath.Size = new Size(502, 23);
+            txtFilePath.TabIndex = 0;
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(11, 16);
+            label1.Location = new Point(12, 18);
             label1.Name = "label1";
-            label1.Size = new Size(115, 15);
-            label1.TabIndex = 0;
-            label1.Text = "스위치(변수)명 입력";
+            label1.Size = new Size(151, 15);
+            label1.TabIndex = 1;
+            label1.Text = "실행할 프로그램 경로 입력";
             // 
-            // textBox1
+            // btnOpenBrowser
             // 
-            txtVarName.Location = new Point(132, 13);
-            txtVarName.MaxLength = 20;
-            txtVarName.Name = "txtVarName";
-            txtVarName.Size = new Size(152, 23);
-            txtVarName.TabIndex = 1;
+            btnOpenBrowser.Location = new Point(677, 15);
+            btnOpenBrowser.Name = "btnOpenBrowser";
+            btnOpenBrowser.Size = new Size(75, 23);
+            btnOpenBrowser.TabIndex = 2;
+            btnOpenBrowser.Text = "찾아보기";
+            btnOpenBrowser.UseVisualStyleBackColor = true;
+            btnOpenBrowser.Click += btnOpenBrowser_Click;
             // 
             // btnOK
             // 
-            btnOK.Location = new Point(394, 13);
+            btnOK.Location = new Point(310, 70);
             btnOK.Name = "btnOK";
             btnOK.Size = new Size(75, 23);
             btnOK.TabIndex = 3;
@@ -59,7 +69,7 @@
             // 
             // btnCancel
             // 
-            btnCancel.Location = new Point(475, 13);
+            btnCancel.Location = new Point(391, 70);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new Size(75, 23);
             btnCancel.TabIndex = 4;
@@ -67,41 +77,36 @@
             btnCancel.UseVisualStyleBackColor = true;
             btnCancel.Click += btnCancel_Click;
             // 
-            // comboBox1
+            // openFileDialog1
             // 
-            cboValue.DropDownStyle = ComboBoxStyle.DropDownList;
-            cboValue.FormattingEnabled = true;
-            cboValue.Items.AddRange(new object[] { "true", "false" });
-            cboValue.Location = new Point(290, 13);
-            cboValue.Name = "cboValue";
-            cboValue.Size = new Size(98, 23);
-            cboValue.TabIndex = 2;
+            openFileDialog1.FileName = "파일 찾기";
+            openFileDialog1.Filter = "실행 파일(*.exe) |*.exe|모든 파일(*.*)|*.*";
             // 
-            // PopAddVariable
+            // PopupSelectProgram
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(561, 53);
-            Controls.Add(cboValue);
+            ClientSize = new Size(767, 104);
             Controls.Add(btnCancel);
             Controls.Add(btnOK);
-            Controls.Add(txtVarName);
+            Controls.Add(btnOpenBrowser);
             Controls.Add(label1);
+            Controls.Add(txtFilePath);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
-            Name = "PopAddVariable";
-            StartPosition = FormStartPosition.CenterParent;
-            Text = "AddVariable";
-            Load += PopAddVariable_Load;
+            Name = "PopupSelectProgram";
+            Text = "PopupSelectProgram";
+            Load += PopupSelectProgram_Load;
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
 
+        private TextBox txtFilePath;
         private Label label1;
-        private TextBox txtVarName;
+        private Button btnOpenBrowser;
         private Button btnOK;
         private Button btnCancel;
-        private ComboBox cboValue;
+        private OpenFileDialog openFileDialog1;
     }
 }

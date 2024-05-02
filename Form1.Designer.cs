@@ -35,6 +35,7 @@
             columnHeader_CHSwith = new ColumnHeader();
             columnHeader_CHValueTo = new ColumnHeader();
             groupBox1 = new GroupBox();
+            lblFilePath = new Label();
             lblHideMacroEditView = new Label();
             cboVariableValueTo = new ComboBox();
             cboVariableTo = new ComboBox();
@@ -151,6 +152,7 @@
             // groupBox1
             // 
             groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            groupBox1.Controls.Add(lblFilePath);
             groupBox1.Controls.Add(lblHideMacroEditView);
             groupBox1.Controls.Add(cboVariableValueTo);
             groupBox1.Controls.Add(cboVariableTo);
@@ -174,6 +176,14 @@
             groupBox1.Size = new Size(806, 109);
             groupBox1.TabIndex = 12;
             groupBox1.TabStop = false;
+            // 
+            // lblFilePath
+            // 
+            lblFilePath.Font = new Font("맑은 고딕", 7F, FontStyle.Regular, GraphicsUnit.Point);
+            lblFilePath.Location = new Point(473, 51);
+            lblFilePath.Name = "lblFilePath";
+            lblFilePath.Size = new Size(315, 10);
+            lblFilePath.TabIndex = 33;
             // 
             // lblHideMacroEditView
             // 
@@ -218,9 +228,9 @@
             // 
             // btnRemove
             // 
-            btnRemove.Location = new Point(725, 62);
+            btnRemove.Location = new Point(725, 70);
             btnRemove.Name = "btnRemove";
-            btnRemove.Size = new Size(75, 37);
+            btnRemove.Size = new Size(75, 29);
             btnRemove.TabIndex = 28;
             btnRemove.Text = "입력초기화";
             btnRemove.UseVisualStyleBackColor = true;
@@ -255,9 +265,9 @@
             // 
             // btnAdd
             // 
-            btnAdd.Location = new Point(644, 62);
+            btnAdd.Location = new Point(644, 70);
             btnAdd.Name = "btnAdd";
-            btnAdd.Size = new Size(75, 37);
+            btnAdd.Size = new Size(75, 29);
             btnAdd.TabIndex = 8;
             btnAdd.Text = "추가";
             btnAdd.UseVisualStyleBackColor = true;
@@ -300,6 +310,7 @@
             cboAction.Name = "cboAction";
             cboAction.Size = new Size(115, 23);
             cboAction.TabIndex = 4;
+            cboAction.SelectionChangeCommitted += cboAction_SelectionChangeCommitted;
             // 
             // label3
             // 
@@ -584,7 +595,7 @@
             pnlMainSwitch.Controls.Add(chkRunMacro);
             pnlMainSwitch.Location = new Point(13, 8);
             pnlMainSwitch.Name = "pnlMainSwitch";
-            pnlMainSwitch.Size = new Size(804, 101);
+            pnlMainSwitch.Size = new Size(804, 102);
             pnlMainSwitch.TabIndex = 22;
             // 
             // pictureBox1
@@ -699,5 +710,6 @@
         private Button btnShowMacroEditView;
         private Label lblHideMacroEditView;
         private PictureBox pictureBox1;
+        private Label lblFilePath;
     }
 }

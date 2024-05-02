@@ -14,34 +14,34 @@ namespace PadControlHelper {
         public Variable editVar { get; set; } = null;
         public PopAddVariable(IPopupListener listener) : base(listener) {
             InitializeComponent();
-            comboBox1.SelectedIndex = 1;
+            cboValue.SelectedIndex = 1;
         }
 
-        private void button2_Click(object sender, EventArgs e) {
+        private void btnCancel_Click(object sender, EventArgs e) {
             if(listener != null)
                 listener.onPopupCanceled(this);
             this.Close();
         }
 
-        private void button1_Click(object sender, EventArgs e) {
-            if(textBox1.Text.Trim().Equals("")) {
+        private void btnOK_Click(object sender, EventArgs e) {
+            if(txtVarName.Text.Trim().Equals("")) {
                 MessageBox.Show("변수명이 입력되지 않았습니다만??", "입력실패");
-                textBox1.Focus();
+                txtVarName.Focus();
             } else {
                 if(listener != null)
-                    listener.onPopupConfirmed(this, new Variable(-1, textBox1.Text, Boolean.Parse(comboBox1.Text)));
+                    listener.onPopupConfirmed(this, new Variable(editVar != null? editVar.id : -1, txtVarName.Text, Boolean.Parse(cboValue.Text)));
                 this.Close();
             }
         }
 
         private void PopAddVariable_Load(object sender, EventArgs e) {
             if(editVar != null) {
-                comboBox1.SelectedIndex = editVar.value ? 0 : 1;
-                textBox1.Text = editVar.name;
+                cboValue.SelectedIndex = editVar.value ? 0 : 1;
+                txtVarName.Text = editVar.name;
                 this.Text = "Edit Variable";
             } else {
-                comboBox1.SelectedIndex = 0;
-                textBox1.Text = "";
+                cboValue.SelectedIndex = 0;
+                txtVarName.Text = "";
                 this.Text = "Add Variable";
             }
         }

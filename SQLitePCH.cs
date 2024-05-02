@@ -19,6 +19,7 @@ namespace PadControllHelper {
         public const string MACRO_POWER = "power";
         public const string MACRO_SWITCHTO = "switchTo";
         public const string MACRO_VALUETO = "valueTo";
+        public const string MACRO_PROGRAMPATH = "runPath";
 
 
 
@@ -51,9 +52,17 @@ namespace PadControllHelper {
                         tableElement(MACRO_POWER,"nvarchar(6)"),
                         tableElement(MACRO_SWITCHTO,"INTEGER"),
                         tableElement(MACRO_VALUETO,"INTEGER"),
+                        tableElement(MACRO_PROGRAMPATH,"nvarchar(500)"),
                             });
                     printCmd(command.CommandText);
                     command.ExecuteNonQuery();
+
+                    try {
+                        // DB Ver 1.1 '프로그램 실행' 컬럼 추가
+                        command.CommandText = "ALTER TABLE " + TB_MACRO + " ADD COLUMN " + MACRO_PROGRAMPATH + " nvarchar(500)";
+                        command.ExecuteNonQuery();
+                    } catch (Exception) {}
+                    
 
                     //command.CommandText = "ALTER TABLE " + TB_MACRO + " ADD COLUMN " + MACRO_SWITCHTO + " INTEGER";
                     //command.ExecuteNonQuery();

@@ -24,6 +24,7 @@ namespace PadControllHelper {
             cboActionItems.Add(CboActionItem.M_DOUBLE_CLICK, new CboActionItem(CboActionItem.M_DOUBLE_CLICK));
             cboActionItems.Add(CboActionItem.WHEEL_UP, new CboActionItem(CboActionItem.WHEEL_UP));
             cboActionItems.Add(CboActionItem.WHEEL_DOWN, new CboActionItem(CboActionItem.WHEEL_DOWN));
+            cboActionItems.Add(CboActionItem.RUN_PROGRAM, new CboActionItem(CboActionItem.RUN_PROGRAM));
 
             foreach(KeyValuePair<string, KeyInfo> kv in KeyList.keyList)
                 cboShortcutItems.Add(kv.Value.name, new CboShortcutItem(kv.Value));
@@ -58,6 +59,7 @@ namespace PadControllHelper {
         public const string M_DOUBLE_CLICK = "M-Double Click";
         public const string WHEEL_UP = "Wheel Up";
         public const string WHEEL_DOWN = "Wheel Down";
+        public const string RUN_PROGRAM = "Run Program";
 
         public MacroAction action { get; set; }
 
@@ -86,6 +88,9 @@ namespace PadControllHelper {
                     break;
                 case WHEEL_DOWN:
                     action = MacroAction.WHEEL_DOWN;
+                    break;
+                case RUN_PROGRAM:
+                    action = MacroAction.RUN_PROGRAM;
                     break;
                 default:
                     action = MacroAction.CLICK;

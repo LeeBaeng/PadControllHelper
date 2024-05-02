@@ -9,6 +9,7 @@ namespace PadControlHelper {
         private List<Variable> vars = new List<Variable>();
         private List<Macro> macros = new List<Macro>();
         private PopAddVariable popAddVariable;
+        private PopupSelectProgram popSelectProgram;
 
         private GlobalKeyHook gkHook;
         private GlobalMouseHook gmHook;
@@ -24,6 +25,7 @@ namespace PadControlHelper {
             InitializeComponent();
             KeyList.initKeyList();
             popAddVariable = new PopAddVariable(this);
+            popSelectProgram = new PopupSelectProgram(this);
         }
 
         private void Form1_Load(object sender, EventArgs e) {
@@ -85,23 +87,24 @@ namespace PadControlHelper {
         }
 
 
-        #region =========== Popup Listener ===========
+        #region =============================================== Popup Listener ===============================================
         public void onPopupConfirmed(Popup popup, object data) {
-            if(popup != null && data != null && !data.ToString().Trim().Equals("") && popup.Equals(popAddVariable)) {
-                if(data is Variable) {
-                    if(popAddVariable.editVar == null) {
-                        Variable s = (Variable)data;
-                        sqLite.Insert(SQLitePCH.TB_VAR + "('" + SQLitePCH.VAR_NAME + "','" + SQLitePCH.VAR_VALUE + "')", "'" + s.name + "', '" + s.value + "'");
-                    } else {
-                        Variable s = (Variable)data;
-                        sqLite.Update(SQLitePCH.TB_VAR, SQLitePCH.VAR_NAME + "='" + s.name + "', " + SQLitePCH.VAR_VALUE + " = " + s.value, "id=" + s.id);
+            if(popup != null && data != null) {
+                if(popup.Equals(popAddVariable)) {
+                    if(data is Variable) {
+                        if(popAddVariable.editVar == null) {
+                            Variable s = (Variable)data;
+                            sqLite.Insert(SQLitePCH.TB_VAR + "('" + SQLitePCH.VAR_NAME + "','" + SQLitePCH.VAR_VALUE + "')", "'" + s.name + "', '" + s.value.ToString() + "'");
+                        } else {
+                            Variable s = (Variable)data;
+                            sqLite.Update(SQLitePCH.TB_VAR, SQLitePCH.VAR_NAME + "='" + s.name + "', " + SQLitePCH.VAR_VALUE + " = '" + s.value.ToString() + "'", "id=" + s.id);
+                        }
+                        readVariableListFromDB();
+                        updateVariableList();
                     }
-                    readVariableListFromDB();
-                    updateVariableList();
+                }else if(popup.Equals(popSelectProgram) && data is string && ((string)data).Contains('\\') ){
+                    setProgramPath(data.ToString());
                 }
-
-            } else if(data == null || data.ToString().Trim().Equals("")) {
-                MessageBox.Show("변수명이 입력되지 않았습니다만?", "추가 실패");
             }
         }
         public void onPopupCanceled(Popup popup) {
@@ -114,14 +117,20 @@ namespace PadControlHelper {
         #endregion
 
 
-        #region ========= WinForm & UI Events =========
+        #region ============================================= WinForm & UI Events =============================================
         private void cboVariable_SelectionChangeCommitted(object sender, EventArgs e) {
             if(sender != null && sender is ComboBox)
                 updateCboVariablesSubUiState(sender as ComboBox);
         }
 
         private void btnRemove_Click(object sender, EventArgs e) {
-            initInputValues();
+            if(isEditMode && listViewMacroList.SelectedItems != null && listViewMacroList.SelectedItems[0].Tag is Macro) {
+                Macro macro = (Macro)listViewMacroList.SelectedItems[0].Tag;
+                sqLite.DeleteDetail(SQLitePCH.TB_MACRO, SQLitePCH.MACRO_Id, macro.id);
+                updateMacroList();
+            } else {
+                initInputValues();
+            }
         }
 
         private void btnDeleteVariable_Click(object sender, EventArgs e) {
@@ -141,8 +150,18 @@ namespace PadControlHelper {
             //    return;
             //}
 
+            if(txtTitle.Text.Trim().Equals("") || txtTitle.Text.Length < 2) {
+                MessageBox.Show("매크로 제목을 올바르게 입력해주세요.(공백 불가, 3글자 이상 필수)");
+                return;
+            }
+
             if(cboAction.SelectedItem == null || cboShortCut.SelectedItem == null) {
                 MessageBox.Show("Action, Shortcut 선택이 올바르지 않음.");
+                return;
+            }
+
+            if(cboAction.SelectedItem == cboItems.cboActionItems[CboActionItem.RUN_PROGRAM] && lblFilePath.Text == "") {
+                MessageBox.Show("실행할 프로그램 경로가 올바르지 않습니다.");
                 return;
             }
 
@@ -156,7 +175,8 @@ namespace PadControlHelper {
                         cboSWCondition.Enabled ? (cboSWCondition.SelectedItem as CboActivateCondition).activateCondition : ActivateCondition.ANY,
                         true,
                         (cboVariableTo.SelectedItem != null && cboVariableTo.SelectedItem != cboItems.cboVarItems[CboVariableItem.NOTUSE]) ? cboVariableTo.SelectedItem as Variable : null,
-                        cboVariableValueTo.Enabled ? (cboVariableValueTo.SelectedItem as CboActivateCondition).activateCondition : ActivateCondition.ANY
+                        cboVariableValueTo.Enabled ? (cboVariableValueTo.SelectedItem as CboActivateCondition).activateCondition : ActivateCondition.ANY,
+                        (lblFilePath.Tag != null && lblFilePath.Tag is string)? lblFilePath.Tag.ToString() : null
                     );
 
             if(!isEditMode) {
@@ -171,7 +191,8 @@ namespace PadControlHelper {
                     SQLitePCH.MACRO_SWITCH + "','" +
                     SQLitePCH.MACRO_SWCONDITION + "','" +
                     SQLitePCH.MACRO_SWITCHTO + "','" +
-                    SQLitePCH.MACRO_VALUETO
+                    SQLitePCH.MACRO_VALUETO + "','" +
+                    SQLitePCH.MACRO_PROGRAMPATH
                     + "')",
                     "'" + m.title + "'," +
                     m.pointX + ", " +
@@ -181,7 +202,8 @@ namespace PadControlHelper {
                     ((m.variable != null) ? m.variable.id : -1) + ", " +
                     (int)m.activateCondition + ", " +
                     ((m.changeAfterVar != null) ? (int)m.changeAfterVar.id : -1) + ", " +
-                    (int)m.changeValueTo
+                    (int)m.changeValueTo + ", " +
+                    "'" + m.runFilePath + "'"
                     );
 
             } else {
@@ -198,8 +220,9 @@ namespace PadControlHelper {
                         SQLitePCH.MACRO_SWITCH + "=" + ((m.variable != null) ? m.variable.id : -1) + ", " +
                         SQLitePCH.MACRO_SWCONDITION + "=" + (int)m.activateCondition + ", " +
                         SQLitePCH.MACRO_SWITCHTO + "=" + ((m.changeAfterVar != null) ? m.changeAfterVar.id : -1) + ", " +
-                        SQLitePCH.MACRO_VALUETO + "=" + (int)m.changeValueTo,
-                        "id=" + m.id
+                        SQLitePCH.MACRO_VALUETO + "=" + (int)m.changeValueTo + ", " +
+                        SQLitePCH.MACRO_PROGRAMPATH + "=" + "'" + m.runFilePath + "'"
+                        , "id=" + m.id
                     );
                 }
             }
@@ -218,8 +241,12 @@ namespace PadControlHelper {
                     txtPointY.Text = macro.pointY.ToString();
 
                     foreach(CboActionItem ci in cboAction.Items)
-                        if(ci.action == macro.action)
+                        if(ci.action == macro.action) {
                             cboAction.SelectedItem = ci;
+                            if(macro.action == MacroAction.RUN_PROGRAM) {
+                                setProgramPath(macro.runFilePath);
+                            }
+                        }
 
                     foreach(CboShortcutItem ci in cboShortCut.Items)
                         if(ci.keyInfo == macro.keyInfo)
@@ -392,8 +419,10 @@ namespace PadControlHelper {
         private void btnAddVariable_Click(object sender, EventArgs e) {
             popAddVariable.editVar = null;
             if(sender == btnEditVariable && lstVariableList.SelectedItems != null && lstVariableList.SelectedItems.Count > 0 && lstVariableList.SelectedItems[0].Tag is Variable) {
+                LLog.info(lstVariableList.SelectedItems[0].Tag.ToString());
                 popAddVariable.editVar = lstVariableList.SelectedItems[0].Tag as Variable;
             }
+            popAddVariable.TopMost = chkOptAlwaysTop.Checked;
             popAddVariable.ShowDialog(this);
         }
 
@@ -426,9 +455,22 @@ namespace PadControlHelper {
                 }
             }
         }
+
+        private void cboAction_SelectionChangeCommitted(object sender, EventArgs e) {
+            if(cboAction.SelectedItem != null && cboAction.SelectedItem == cboItems.cboActionItems[CboActionItem.RUN_PROGRAM]) {
+                popSelectProgram.TopMost = chkOptAlwaysTop.Checked;
+                popSelectProgram.ShowDialog(this);
+                txtPointX.Enabled = false;
+                txtPointY.Enabled = false;
+            } else {
+                txtPointX.Enabled = true;
+                txtPointY.Enabled = true;
+                lblFilePath.Text = "";
+            }
+        }
         #endregion
 
-        #region =========== UI State Control ===========
+        #region ======================================================= UI State Control =======================================================
         private void initInputValues() {
             //초기 콤보박스의 SelectedIndex 설정
             cboVariable.SelectedIndex = 0;
@@ -492,13 +534,14 @@ namespace PadControlHelper {
                     var ki = KeyList.getKeyInfo((int)(long)row[SQLitePCH.MACRO_SHORTCUT]);
                     var sw = getSwitch((int)(long)row[SQLitePCH.MACRO_SWITCH]);
                     var ac = (ActivateCondition)(int)(long)row[SQLitePCH.MACRO_SWCONDITION];
-                    var rst = Boolean.TryParse(row[SQLitePCH.MACRO_POWER]?.ToString(), out var power);
+                    var rst = System.Boolean.TryParse(row[SQLitePCH.MACRO_POWER]?.ToString(), out var power);
+                    var runPath = row[SQLitePCH.MACRO_PROGRAMPATH].ToString();
                     if(!rst)
                         power = true;
                     var switchTo = getSwitch((int)(long)row[SQLitePCH.MACRO_SWITCHTO]);
                     var valueTo = (ActivateCondition)(int)(long)row[SQLitePCH.MACRO_VALUETO];
 
-                    Macro m = new Macro(title, px, py, ma, ki, sw, ac, power, switchTo, valueTo, (int)(long)row[SQLitePCH.MACRO_Id]);
+                    Macro m = new Macro(title, px, py, ma, ki, sw, ac, power, switchTo, valueTo, runPath, (int)(long)row[SQLitePCH.MACRO_Id]);
 
                     macros.Add(m);
                 } catch(Exception ex) {
@@ -519,6 +562,7 @@ namespace PadControlHelper {
                     (m.variable != null)? m.activateCondition.ToString() : "-",
                     (m.changeAfterVar != null)? m.changeAfterVar.ToString() : "-",
                     (m.changeAfterVar != null)? m.changeValueTo.ToString() : "-",
+                    m.runFilePath != null? m.runFilePath : "-"
                 });
                 item.Tag = m;
                 item.Checked = m.power;
@@ -575,9 +619,26 @@ namespace PadControlHelper {
 
             updateCboVariableList();
         }
+
+        private void setProgramPath(string? fullPath) {
+            if(fullPath != null) {
+                var splitStr = fullPath.Split('\\');
+                if(splitStr.Length > 0) {
+                    var fileName = splitStr[splitStr.Length - 1];
+                    lblFilePath.Text = fileName.ToString();
+                } else {
+                    lblFilePath.Text = fullPath;
+                }
+                lblFilePath.Tag = fullPath;
+            } else {
+                lblFilePath.Text = "";
+                lblFilePath.Tag = null;
+            }
+            
+        }
         #endregion
 
-        #region =========== Global Hook ===========
+        #region ======================================================= Global Hook =======================================================
         private void KeyDownHandler(object sender, KeyEventArgs args) {
             Keys key = args.KeyCode;
             if(!isMacroRunning) {
@@ -608,7 +669,7 @@ namespace PadControlHelper {
                 if(m.keyInfo.key == key) {
                     var action = m.action;
                     gmHook.ForceSetCursor(m.pointX, m.pointY);
-                    Thread.Sleep(50);
+                    Thread.Sleep(100);
                     switch(action) {
                         case MacroAction.CLICK:
                             LLog.info("click event");
@@ -642,6 +703,15 @@ namespace PadControlHelper {
                         case MacroAction.WHEEL_DOWN:
                             gmHook.ForceWheelDown(40);
                             break;
+
+                        case MacroAction.RUN_PROGRAM:
+                            try {
+                                if(m.runFilePath != null)
+                                    Process.Start(m.runFilePath);
+                            } catch(Exception e) {
+                                MessageBox.Show("프로그램 시작 실패. 경로가 올바르지 않거나 해당 경로에 프로그램이 존재하지 않습니다. \r\n\r\n" + e.ToString());
+                            }
+                            break;
                     }
 
                     if(m.changeAfterVar != null) {
@@ -673,5 +743,7 @@ namespace PadControlHelper {
             }
         }
         #endregion
+
+        
     }
 }
