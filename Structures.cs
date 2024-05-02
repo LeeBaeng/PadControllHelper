@@ -18,9 +18,9 @@ namespace PadControlHelper {
         public Variable? changeAfterVar { get; set; }
         public ActivateCondition changeValueTo {  get; set; }
 
-        public string? runFilePath { get; set; }
+        public RunInfo? runInfo { get; set; }
 
-        public Macro(string title, int pointX, int pointY, MacroAction action, KeyInfo shortCut, Variable? variable, ActivateCondition activateWhen, bool power, Variable? changeAfterVar, ActivateCondition changeValueTo, string? runfilePath, int id = -1) {
+        public Macro(string title, int pointX, int pointY, MacroAction action, KeyInfo shortCut, Variable? variable, ActivateCondition activateWhen, bool power, Variable? changeAfterVar, ActivateCondition changeValueTo, RunInfo? runInfo, int id = -1) {
             this.title = title;
             this.pointX = pointX;
             this.pointY = pointY;
@@ -31,7 +31,7 @@ namespace PadControlHelper {
             this.power = power;
             this.changeAfterVar = changeAfterVar;
             this.changeValueTo = changeValueTo;
-            this.runFilePath = runfilePath;
+            this.runInfo = runInfo;
             this.id = id;   
         }
     }
@@ -177,6 +177,29 @@ namespace PadControlHelper {
 
         public override string ToString() {
             return $"Variable : {name} (id:{id}, value:{value}, name:{name})";
+        }
+    }
+
+    public class RunInfo {
+        public string fullPath { get; set; }
+        public string fileName { get; set; }
+        public string? arguments { get; set; }
+
+        public RunInfo(string fullPath, string fileName, string arguments) {
+            this.fullPath = fullPath;
+            this.fileName = fileName;
+            this.arguments = arguments;
+        }
+
+        public RunInfo(string fullPath, string? arguments) {
+            this.fullPath = fullPath;
+            this.arguments = arguments;
+
+            var splitStr = fullPath?.Split('\\');
+            if(splitStr?.Length > 0)
+                fileName = splitStr[splitStr.Length - 1];
+            else
+                fileName = "";
         }
     }
 

@@ -29,11 +29,14 @@
             btnOK = new Button();
             btnCancel = new Button();
             openFileDialog1 = new OpenFileDialog();
+            txtRunArguments = new TextBox();
+            label2 = new Label();
             SuspendLayout();
             // 
             // txtFilePath
             // 
             txtFilePath.Location = new Point(169, 15);
+            txtFilePath.MaxLength = 500;
             txtFilePath.Name = "txtFilePath";
             txtFilePath.Size = new Size(502, 23);
             txtFilePath.TabIndex = 0;
@@ -41,7 +44,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(12, 18);
+            label1.Location = new Point(12, 20);
             label1.Name = "label1";
             label1.Size = new Size(151, 15);
             label1.TabIndex = 1;
@@ -82,11 +85,30 @@
             openFileDialog1.FileName = "파일 찾기";
             openFileDialog1.Filter = "실행 파일(*.exe) |*.exe|모든 파일(*.*)|*.*";
             // 
+            // txtRunArguments
+            // 
+            txtRunArguments.Location = new Point(169, 41);
+            txtRunArguments.MaxLength = 500;
+            txtRunArguments.Name = "txtRunArguments";
+            txtRunArguments.Size = new Size(502, 23);
+            txtRunArguments.TabIndex = 5;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(69, 45);
+            label2.Name = "label2";
+            label2.Size = new Size(94, 15);
+            label2.TabIndex = 6;
+            label2.Text = "실행 Arguments";
+            // 
             // PopupSelectProgram
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(767, 104);
+            Controls.Add(label2);
+            Controls.Add(txtRunArguments);
             Controls.Add(btnCancel);
             Controls.Add(btnOK);
             Controls.Add(btnOpenBrowser);
@@ -108,5 +130,7 @@
         private Button btnOK;
         private Button btnCancel;
         private OpenFileDialog openFileDialog1;
+        private TextBox txtRunArguments;
+        private Label label2;
     }
 }

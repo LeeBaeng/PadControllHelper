@@ -102,8 +102,8 @@ namespace PadControlHelper {
                         readVariableListFromDB();
                         updateVariableList();
                     }
-                }else if(popup.Equals(popSelectProgram) && data is string && ((string)data).Contains('\\') ){
-                    setProgramPath(data.ToString());
+                } else if(popup.Equals(popSelectProgram) && data is RunInfo) {
+                    setProgramPath((RunInfo)data);
                 }
             }
         }
@@ -176,7 +176,7 @@ namespace PadControlHelper {
                         true,
                         (cboVariableTo.SelectedItem != null && cboVariableTo.SelectedItem != cboItems.cboVarItems[CboVariableItem.NOTUSE]) ? cboVariableTo.SelectedItem as Variable : null,
                         cboVariableValueTo.Enabled ? (cboVariableValueTo.SelectedItem as CboActivateCondition).activateCondition : ActivateCondition.ANY,
-                        (lblFilePath.Tag != null && lblFilePath.Tag is string)? lblFilePath.Tag.ToString() : null
+                        (lblFilePath.Tag != null && lblFilePath.Tag is RunInfo) ? lblFilePath.Tag as RunInfo : null
                     );
 
             if(!isEditMode) {
@@ -192,7 +192,8 @@ namespace PadControlHelper {
                     SQLitePCH.MACRO_SWCONDITION + "','" +
                     SQLitePCH.MACRO_SWITCHTO + "','" +
                     SQLitePCH.MACRO_VALUETO + "','" +
-                    SQLitePCH.MACRO_PROGRAMPATH
+                    SQLitePCH.MACRO_PROGRAMPATH + "','" +
+                    SQLitePCH.MACRO_PROGRAMARGS
                     + "')",
                     "'" + m.title + "'," +
                     m.pointX + ", " +
@@ -203,7 +204,8 @@ namespace PadControlHelper {
                     (int)m.activateCondition + ", " +
                     ((m.changeAfterVar != null) ? (int)m.changeAfterVar.id : -1) + ", " +
                     (int)m.changeValueTo + ", " +
-                    "'" + m.runFilePath + "'"
+                    "'" + m.runInfo?.fullPath + "', " +
+                    "'" + m.runInfo?.arguments + "', "
                     );
 
             } else {
@@ -221,7 +223,8 @@ namespace PadControlHelper {
                         SQLitePCH.MACRO_SWCONDITION + "=" + (int)m.activateCondition + ", " +
                         SQLitePCH.MACRO_SWITCHTO + "=" + ((m.changeAfterVar != null) ? m.changeAfterVar.id : -1) + ", " +
                         SQLitePCH.MACRO_VALUETO + "=" + (int)m.changeValueTo + ", " +
-                        SQLitePCH.MACRO_PROGRAMPATH + "=" + "'" + m.runFilePath + "'"
+                        SQLitePCH.MACRO_PROGRAMPATH + "=" + "'" + m.runInfo?.fullPath + "', " +
+                        SQLitePCH.MACRO_PROGRAMARGS + "=" + "'" + m.runInfo?.arguments + "'"
                         , "id=" + m.id
                     );
                 }
@@ -243,8 +246,13 @@ namespace PadControlHelper {
                     foreach(CboActionItem ci in cboAction.Items)
                         if(ci.action == macro.action) {
                             cboAction.SelectedItem = ci;
+                            setProgramPath(macro.runInfo);
                             if(macro.action == MacroAction.RUN_PROGRAM) {
-                                setProgramPath(macro.runFilePath);
+                                txtPointX.Enabled = false;
+                                txtPointY.Enabled = false;
+                            } else {
+                                txtPointX.Enabled = true;
+                                txtPointY.Enabled = true;
                             }
                         }
 
@@ -459,6 +467,12 @@ namespace PadControlHelper {
         private void cboAction_SelectionChangeCommitted(object sender, EventArgs e) {
             if(cboAction.SelectedItem != null && cboAction.SelectedItem == cboItems.cboActionItems[CboActionItem.RUN_PROGRAM]) {
                 popSelectProgram.TopMost = chkOptAlwaysTop.Checked;
+                if(isEditMode && listViewMacroList.SelectedItems != null && listViewMacroList.SelectedItems[0].Tag != null && listViewMacroList.SelectedItems[0].Tag is Macro) {
+                    Macro m = listViewMacroList.SelectedItems[0].Tag as Macro;
+                    popSelectProgram.edtRuninfo = m.runInfo;
+                } else {
+                    popSelectProgram.edtRuninfo = null;
+                }
                 popSelectProgram.ShowDialog(this);
                 txtPointX.Enabled = false;
                 txtPointY.Enabled = false;
@@ -484,6 +498,10 @@ namespace PadControlHelper {
             cboVariable.SelectedIndex = 0;
             cboShortCut.SelectedIndex = -1;
             cboAction.SelectedIndex = -1;
+
+            txtPointX.Enabled = true;
+            txtPointY.Enabled = true;
+            lblFilePath.Text = "";
 
             cboVariable_SelectionChangeCommitted(cboVariable, null);
         }
@@ -536,12 +554,18 @@ namespace PadControlHelper {
                     var ac = (ActivateCondition)(int)(long)row[SQLitePCH.MACRO_SWCONDITION];
                     var rst = System.Boolean.TryParse(row[SQLitePCH.MACRO_POWER]?.ToString(), out var power);
                     var runPath = row[SQLitePCH.MACRO_PROGRAMPATH].ToString();
+                    var runArgs = row[SQLitePCH.MACRO_PROGRAMARGS].ToString();
+
+                    RunInfo? runInf = null;
+                    if(runPath != null)
+                        runInf = new RunInfo(runPath, runArgs);
+
                     if(!rst)
                         power = true;
                     var switchTo = getSwitch((int)(long)row[SQLitePCH.MACRO_SWITCHTO]);
                     var valueTo = (ActivateCondition)(int)(long)row[SQLitePCH.MACRO_VALUETO];
 
-                    Macro m = new Macro(title, px, py, ma, ki, sw, ac, power, switchTo, valueTo, runPath, (int)(long)row[SQLitePCH.MACRO_Id]);
+                    Macro m = new Macro(title, px, py, ma, ki, sw, ac, power, switchTo, valueTo, runInf, (int)(long)row[SQLitePCH.MACRO_Id]);
 
                     macros.Add(m);
                 } catch(Exception ex) {
@@ -562,7 +586,9 @@ namespace PadControlHelper {
                     (m.variable != null)? m.activateCondition.ToString() : "-",
                     (m.changeAfterVar != null)? m.changeAfterVar.ToString() : "-",
                     (m.changeAfterVar != null)? m.changeValueTo.ToString() : "-",
-                    m.runFilePath != null? m.runFilePath : "-"
+                    m.runInfo != null? m.runInfo.fullPath : "-",
+                    m.runInfo != null? m.runInfo.fileName : "-",
+                    m.runInfo != null && m.runInfo.arguments != null? m.runInfo.arguments : "-"
                 });
                 item.Tag = m;
                 item.Checked = m.power;
@@ -620,21 +646,30 @@ namespace PadControlHelper {
             updateCboVariableList();
         }
 
-        private void setProgramPath(string? fullPath) {
-            if(fullPath != null) {
-                var splitStr = fullPath.Split('\\');
-                if(splitStr.Length > 0) {
-                    var fileName = splitStr[splitStr.Length - 1];
-                    lblFilePath.Text = fileName.ToString();
-                } else {
-                    lblFilePath.Text = fullPath;
-                }
-                lblFilePath.Tag = fullPath;
+        //private void setProgramPath(string? fullPath) {
+        //    if(fullPath != null) {
+        //        var splitStr = fullPath.Split('\\');
+        //        if(splitStr.Length > 0) {
+        //            var fileName = splitStr[splitStr.Length - 1];
+        //            lblFilePath.Text = fileName.ToString();
+        //        } else {
+        //            lblFilePath.Text = fullPath;
+        //        }
+        //        lblFilePath.Tag = fullPath;
+        //    } else {
+        //        lblFilePath.Text = "";
+        //        lblFilePath.Tag = null;
+        //    }
+        //}
+
+        private void setProgramPath(RunInfo? runinfo) {
+            if(runinfo != null) {
+                lblFilePath.Text = runinfo.fileName;
+                lblFilePath.Tag = runinfo;
             } else {
                 lblFilePath.Text = "";
                 lblFilePath.Tag = null;
             }
-            
         }
         #endregion
 
@@ -649,7 +684,6 @@ namespace PadControlHelper {
                 }
                 return;
             }
-
 
             Debug.WriteLine("Global Hook : " + key.ToString());
 
@@ -706,8 +740,12 @@ namespace PadControlHelper {
 
                         case MacroAction.RUN_PROGRAM:
                             try {
-                                if(m.runFilePath != null)
-                                    Process.Start(m.runFilePath);
+                                if(m.runInfo != null) {
+                                    if(m.runInfo.arguments != null)
+                                        Process.Start(m.runInfo.fullPath, m.runInfo.arguments);
+                                    else
+                                        Process.Start(m.runInfo.fullPath);
+                                }
                             } catch(Exception e) {
                                 MessageBox.Show("프로그램 시작 실패. 경로가 올바르지 않거나 해당 경로에 프로그램이 존재하지 않습니다. \r\n\r\n" + e.ToString());
                             }
@@ -744,6 +782,6 @@ namespace PadControlHelper {
         }
         #endregion
 
-        
+
     }
 }
